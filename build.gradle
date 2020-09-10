@@ -1,0 +1,22 @@
+plugins {
+    id "java"
+    id "application"
+}
+
+repositories {
+    jcenter()
+}
+
+def awssdkVersion = "2.14.12"
+
+dependencies {
+    implementation "software.amazon.awssdk:dynamodb:${awssdkVersion}"
+    implementation "software.amazon.awssdk:regions:${awssdkVersion}"
+    implementation "software.amazon.awssdk:core:${awssdkVersion}"
+    implementation "com.google.guava:guava:28.2-jre"
+    testImplementation "junit:junit:4.12"
+}
+
+application {
+    mainClassName = "tdj.App"
+}
