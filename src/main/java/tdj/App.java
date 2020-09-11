@@ -13,9 +13,9 @@ import java.util.stream.IntStream;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 public class App {
-  static final String HOST = "http://localhost:8000";
   static final Region REGION = Region.AP_NORTHEAST_1;
   static final int POPULATION_CONCURRENCY = 1;
   static final int NUM_PER_THREAD = 1000;
@@ -31,7 +31,7 @@ public class App {
   static final AtomicInteger count = new AtomicInteger(0);
 
   public static void main(String[] args) {
-    Storage storage = new Storage(HOST, REGION);
+    //Storage storage = new Storage(REGION);
 
     //storage.createTable(TABLE, PARTITION_KEY, SORT_KEY, new Long(100));
     //try {
@@ -42,15 +42,24 @@ public class App {
 
     // crudTest(storage);
 
-    conditionalInsertionsTest(storage);
+    // conditionalInsertionsTest(storage);
 
-    // conditionalUpdatesTest(storage);
+    //conditionalUpdatesTest(storage);
 
     // populateItems(storage);
 
+
     // storage.deleteTable(TABLE);
 
-    storage.close();
+    //storage.close();
+
+    // Type should be get, insert, conditionalInsert, update, conditionalUpdate
+    String type = "conditionalUpdate";
+    int numItems = 1000;
+    int runForSec = 100;
+    int concurrency = 8;
+    int throughput = 10;
+    new Benchmark(type, numItems, runForSec, concurrency, throughput).run();
   }
 
   private static void crudTest(Storage storage) {
@@ -130,6 +139,7 @@ public class App {
     if (count.get() == NUM_PER_THREAD) {
       System.out.println("The insertion test worked successfully!");
     } else {
+      System.err.println("Count: " + count.get());
       System.err.println("Unexpected result!");
     }
   }
@@ -158,6 +168,9 @@ public class App {
 
           storage.putWithCondition(
               TABLE, makeInitialValues(i), conditions, expressionAttributeValues);
+        } catch (ConditionalCheckFailedException e) {
+          System.err.println("Failed due to the conditions");
+          continue;
         } catch (Exception e) {
           System.err.println(e.getMessage());
           continue;
@@ -191,6 +204,8 @@ public class App {
     if (count.get() == 100 && Integer.valueOf(result.get(VALUE1).n()) == 100) {
       System.out.println("The insertion test worked successfully!");
     } else {
+      System.err.println("Count: " + count.get());
+      System.err.println("Last value1: " + result.get(VALUE1).n());
       System.err.println("Unexpected result!");
     }
   }
@@ -219,6 +234,9 @@ public class App {
 
           storage.updateWithCondition(
               TABLE, makeKeyValues(0), updateValues, conditions, expressionAttributeValues);
+        } catch (ConditionalCheckFailedException e) {
+          System.err.println("Failed due to the conditions");
+          continue;
         } catch (Exception e) {
           System.err.println(e.getMessage());
           continue;

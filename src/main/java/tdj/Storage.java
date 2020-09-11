@@ -23,7 +23,7 @@ import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 public class Storage {
   private final DynamoDbClient client;
 
-  public Storage(String host, Region region) {
+  public Storage(Region region) {
     this.client = DynamoDbClient.builder().region(region).build();
   }
 
